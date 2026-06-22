@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Textile Cost Calculator (40% Weight Formula)</title>
+
+<style>
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-color: #f1f5f9;
+    --card-bg: #ffffff;
+    --text-color: #1e293b;
+    --border-color: #cbd5e1;
+    --voil-color: #0284c7;
+    --popline-color: #b45309;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 550px;
+    margin: 20px auto;
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+h3 {
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 6px;
+    margin-top: 20px;
+    color: #475569;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 213, 0.15);
+}
+
+/* Dynamic Chemical Rows */
+.chemical-row {
+    display: grid;
+    grid-template-columns: 3fr 2.5fr auto;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+}
+
+.add-chem-box {
+    background: #f8fafc;
+    border: 1px dashed var(--primary-color);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary { background: var(--primary-color); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-secondary { background: #475569; margin-top: 8px; padding: 10px;}
+.btn-secondary:hover { background: #334155; }
+.btn-danger { background: #ef4444; padding: 10px; border-radius: 8px;}
+.btn-danger:hover { background: #dc2626; }
+
+/* Dashboard Results */
+.result-box {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+}
+.voil-res { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
+.popline-res { background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; }
+.total-res { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 18px; }
+
+.res-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+.res-item:last-child { margin-bottom: 0; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Chemical Cost Calculator</h2>
+
+    <div class="add-chem-box">
+        <label style="margin-top:0; color: var(--primary-color);">＋ নতুন কেমিক্যাল যোগ করুন</label>
+        <div class="grid-2">
+            <input type="text" id="newChemName" placeholder="Chemical Name">
+            <input type="number" id="newChemRate" placeholder="Rate per KG (Tk)">
+        </div>
+        <button class="btn btn-secondary" onclick="addNewChemical()">Add to List</button>
+    </div>
+
+    <h3>Chemicals Input</h3>
+    <div style="display:grid; grid-template-columns: 3fr 2.5fr auto; gap:10px; padding-left:10px; margin-bottom:5px;">
+        <span style="font-weight:bold; font-size:12px; color:#64748b;">Name (Rate)</span>
+        <span style="font-weight:bold; font-size:12px; color:#64748b;">Total QTY (KG)</span>
+        <span></span>
+    </div>
+    
+    <div id="chemicalList">
+        </div>
+
+    <h3>Production (Yds)</h3>
+    <div class="grid-2">
+        <div class="form-group">
+            <label style="color: var(--voil-color);">Voil Production</label>
+            <input type="number" id="voilYds" value="0" oninput="calculateCost()">
+        </div>
+        <div class="form-group">
+            <label style="color: var(--popline-color);">Popline Production</label>
+            <input type="number" id="poplineYds" value="0" oninput="calculateCost()">
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label>Total Production (Yds)</label>
+        <input type="number" id="totalYds" value="0" style="background: #e2e8f0; font-weight: bold;" readonly>
+    </div>
+
+    <button class="btn btn-primary" onclick="calculateCost()">Calculate Costs</button>
+
+    <div class="result-box voil-res">
+        <div class="res-item"><span>Voil Chemical Cost:</span> <span><span id="voilTotal">0.00</span> Tk</span></div>
+        <div class="res-item"><span>Per Yds Voil Cost:</span> <span><span id="voilPer">0.0000</span> Tk/Yds</span></div>
+    </div>
+
+    <div class="result-box popline-res">
+        <div class="res-item"><span>Popline Chemical Cost:</span> <span><span id="poplineTotal">0.00</span> Tk</span></div>
+        <div class="res-item"><span>Per Yds Popline Cost:</span> <span><span id="poplinePer">0.0000</span> Tk/Yds</span></div>
+    </div>
+
+    <div class="result-box total-res">
+        <div class="res-item"><span>Grand Total Cost:</span> <span><span id="grandTotal">0.00</span> Tk</span></div>
+        <div class="res-item"><span>Avg Per Yds Cost:</span> <span><span id="avgPer">0.0000</span> Tk/Yds</span></div>
+    </div>
+</div>
+
+<script>
+// ডিফল্ট কেমিক্যাল ডাটা (ড্রপডাউন বা টাইপ বাদ দেওয়া হয়েছে)
+let chemicals = [
+    { id: "power", name: "Power Soft", rate: 200 },
+    { id: "softener", name: "Softener", rate: 300 },
+    { id: "appriton", name: "Appriton", rate: 180 },
+    { id: "buster", name: "Buster", rate: 400 },
+    { id: "pva", name: "PVA", rate: 350 },
+    { id: "acid", name: "A. Acid", rate: 40 }
+];
+
+function renderChemicals() {
+    const listContainer = document.getElementById("chemicalList");
+    const savedValues = {};
+    
+    chemicals.forEach(chem => {
+        const inputEl = document.getElementById(`input_${chem.id}`);
+        savedValues[chem.id] = inputEl ? inputEl.value : "0";
+    });
+
+    listContainer.innerHTML = "";
+    
+    chemicals.forEach(chem => {
+        const row = document.createElement("div");
+        row.className = "chemical-row";
+        const currentQty = savedValues[chem.id] || "0";
+
+        row.innerHTML = `
+            <span style="font-size:15px; font-weight:600;">${chem.name} <br><small style="color:#64748b; font-weight:normal;">(${chem.rate} Tk/KG)</small></span>
+            <input type="number" id="input_${chem.id}" value="${currentQty}" min="0" oninput="calculateCost()">
+            <button class="btn btn-danger" onclick="removeChemical('${chem.id}')">✕</button>
+        `;
+        listContainer.appendChild(row);
+    });
+}
+
+function addNewChemical() {
+    const nameInput = document.getElementById("newChemName");
+    const rateInput = document.getElementById("newChemRate");
+    const name = nameInput.value.trim();
+    const rate = parseFloat(rateInput.value);
+    
+    if (name === "" || isNaN(rate) || rate <= 0) {
+        alert("সঠিক নাম এবং রেট দিন।");
+        return;
+    }
+    
+    const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Date.now();
+    chemicals.push({ id: id, name: name, rate: rate });
+    
+    nameInput.value = "";
+    rateInput.value = "";
+    renderChemicals();
+    calculateCost();
+}
+
+function removeChemical(id) {
+    chemicals = chemicals.filter(chem => chem.id !== id);
+    renderChemicals();
+    calculateCost();
+}
+
+function calculateCost() {
+    let voilYds = parseFloat(document.getElementById("voilYds").value) || 0;
+    let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
+    
+    // সর্বমোট গজ
+    let totalYds = voilYds + poplineYds;
+    document.getElementById("totalYds").value = totalYds.toFixed(2);
+
+    // মোট কেমিক্যাল খরচ বের করা
+    let grandTotalCost = 0;
+    chemicals.forEach(chem => {
+        const qtyInput = document.getElementById(`input_${chem.id}`);
+        let qty = qtyInput ? parseFloat(qtyInput.value) || 0 : 0;
+        grandTotalCost += (qty * chem.rate);
+    });
+    
+    let voilTotalCost = 0;
+    let poplineTotalCost = 0;
+    let voilPerYds = 0;
+    let poplinePerYds = 0;
+    let avgPerYds = 0;
+
+    if (totalYds > 0) {
+        // ফর্মুলা: Popline-এ খরচ 40% বেশি (Popline Weight Factor = 1.4)
+        // Equivalent Voil Yds = Voil Yds + (Popline Yds * 1.4)
+        let totalEquivalentVoilYds = voilYds + (poplineYds * 1.4);
+        
+        // বেস রেট (প্রতি গজ Voil এর খরচ)
+        voilPerYds = grandTotalCost / totalEquivalentVoilYds;
+        // Popline এর খরচ ৪০% বেশি
+        poplinePerYds = voilPerYds * 1.4;
+        
+        // আলাদা আলাদা টোটাল কস্টিং বন্টন
+        voilTotalCost = voilPerYds * voilYds;
+        poplineTotalCost = poplinePerYds * poplineYds;
+        
+        // পুরো লটের এভারেজ কস্ট
+        avgPerYds = grandTotalCost / totalYds;
+    }
+    
+    // স্ক্রিনে রেজাল্ট দেখানো
+    document.getElementById("voilTotal").innerHTML = voilTotalCost.toFixed(2);
+    document.getElementById("voilPer").innerHTML = voilPerYds.toFixed(4);
+    
+    document.getElementById("poplineTotal").innerHTML = poplineTotalCost.toFixed(2);
+    document.getElementById("poplinePer").innerHTML = poplinePerYds.toFixed(4);
+    
+    document.getElementById("grandTotal").innerHTML = grandTotalCost.toFixed(2);
+    document.getElementById("avgPer").innerHTML = avgPerYds.toFixed(4);
+}
+
+// Initial Load
+renderChemicals();
+</script>
+
+</body>
+</html>
