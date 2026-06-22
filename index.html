@@ -210,9 +210,7 @@ input:focus, select:focus {
 
     <div id="sec_coating" class="calc-section">
         <h3>3. Coating Section</h3>
-        <div id="coatingContainer">
-            <div class="empty-msg">কোনো কোটিং আইটেম যোগ করা হয়নি।</div>
-        </div>
+        <div id="coatingContainer"></div>
     </div>
 
     <h3>Production (Yds)</h3>
@@ -251,7 +249,7 @@ input:focus, select:focus {
 </div>
 
 <script>
-// প্রি-লোডেড ডাটাবেজ
+// স্ক্রিনশট ১, ২ এবং ৩ এর সব ডেটা আপডেট করা হলো
 let itemsList = [
     // Color Section Data
     { id: "c1", name: "Yellow MERL", rate: 450, section: "color" },
@@ -268,16 +266,20 @@ let itemsList = [
     { id: "ch3", name: "Appriton", rate: 180, section: "chemical" },
     { id: "ch4", name: "Buster", rate: 400, section: "chemical" },
     { id: "ch5", name: "PVA", rate: 350, section: "chemical" },
-    { id: "ch6", name: "A. Acid", rate: 40, section: "chemical" }
+    { id: "ch6", name: "A. Acid", rate: 40, section: "chemical" },
+
+    // Coating Section Data (আপনার স্ক্রিনশট ৩ থেকে যুক্ত করা হলো)
+    { id: "co1", name: "Uria", rate: 36, section: "coating" },
+    { id: "co2", name: "Lgenet", rate: 320, section: "coating" },
+    { id: "co3", name: "Reji Solt", rate: 75, section: "coating" },
+    { id: "co4", name: "Soda", rate: 138, section: "coating" }
 ];
 
 // সেকশন পরিবর্তন করার ফাংশন
 function switchSection(sectionName) {
-    // সব সেকশন হাইড করা
     document.querySelectorAll('.calc-section').forEach(sec => {
         sec.classList.remove('active');
     });
-    // সিলেক্টেড সেকশনটি শো করা
     document.getElementById(`sec_${sectionName}`).classList.add('active');
 }
 
@@ -313,7 +315,7 @@ function renderSections() {
 
     Object.keys(sections).forEach(key => {
         if (sections[key].children.length === 0) {
-            sections[key].innerHTML = `<div class="empty-msg">কোনো কোটিং আইটেম যোগ করা হয়নি।</div>`;
+            sections[key].innerHTML = `<div class="empty-msg">কোনো আইটেম যোগ করা হয়নি।</div>`;
         }
     });
 }
@@ -339,7 +341,7 @@ function addNewItem() {
     rateEl.value = "";
     
     renderSections();
-    switchSection(section); // নতুন আইটেম যে সেকশনে অ্যাড হয়েছে সেখানে অটো সুইচ করবে
+    switchSection(section); 
     calculateCost();
 }
 
@@ -367,7 +369,6 @@ function calculateCost() {
     let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
     let totalYds = parseFloat(document.getElementById("totalYds").value) || 0;
 
-    // স্ক্রিনের সব আইটেমের (Color, Chemical, Coating) মোট যোগফল বের করা
     let grandTotalCost = 0;
     itemsList.forEach(item => {
         const inputField = document.getElementById(`qty_${item.id}`);
@@ -385,7 +386,6 @@ function calculateCost() {
             document.getElementById("voilCard").style.display = "block";
             document.getElementById("poplineCard").style.display = "block";
 
-            // ৪০% এক্সট্রা কস্টিং ফর্মুলা
             let totalEquivalentVoilYds = voilYds + (poplineYds * 1.4);
             voilPerYds = grandTotalCost / totalEquivalentVoilYds;
             poplinePerYds = voilPerYds * 1.4;
