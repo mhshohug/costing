@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Textile Cost Calculator (40% Weight Formula)</title>
+<title>Advanced Textile Cost Calculator (Flexible Production)</title>
 
 <style>
 :root {
@@ -166,27 +166,27 @@ input:focus {
     <div class="grid-2">
         <div class="form-group">
             <label style="color: var(--voil-color);">Voil Production</label>
-            <input type="number" id="voilYds" value="0" oninput="calculateCost()">
+            <input type="number" id="voilYds" value="0" oninput="updateTotalFromSplit()">
         </div>
         <div class="form-group">
             <label style="color: var(--popline-color);">Popline Production</label>
-            <input type="number" id="poplineYds" value="0" oninput="calculateCost()">
+            <input type="number" id="poplineYds" value="0" oninput="updateTotalFromSplit()">
         </div>
     </div>
     
     <div class="form-group">
-        <label>Total Production (Yds)</label>
-        <input type="number" id="totalYds" value="0" style="background: #e2e8f0; font-weight: bold;" readonly>
+        <label style="color: #1e293b;">Total Production (Yds)</label>
+        <input type="number" id="totalYds" value="0" style="font-weight: bold; background: #fff;" oninput="clearSplitOnDirectTotal()">
     </div>
 
     <button class="btn btn-primary" onclick="calculateCost()">Calculate Costs</button>
 
-    <div class="result-box voil-res">
+    <div id="voilCard" class="result-box voil-res">
         <div class="res-item"><span>Voil Chemical Cost:</span> <span><span id="voilTotal">0.00</span> Tk</span></div>
         <div class="res-item"><span>Per Yds Voil Cost:</span> <span><span id="voilPer">0.0000</span> Tk/Yds</span></div>
     </div>
 
-    <div class="result-box popline-res">
+    <div id="poplineCard" class="result-box popline-res">
         <div class="res-item"><span>Popline Chemical Cost:</span> <span><span id="poplineTotal">0.00</span> Tk</span></div>
         <div class="res-item"><span>Per Yds Popline Cost:</span> <span><span id="poplinePer">0.0000</span> Tk/Yds</span></div>
     </div>
@@ -198,7 +198,6 @@ input:focus {
 </div>
 
 <script>
-// ডিফল্ট কেমিক্যাল ডাটা (ড্রপডাউন বা টাইপ বাদ দেওয়া হয়েছে)
 let chemicals = [
     { id: "power", name: "Power Soft", rate: 200 },
     { id: "softener", name: "Softener", rate: 300 },
@@ -259,15 +258,27 @@ function removeChemical(id) {
     calculateCost();
 }
 
+// Voil বা Popline-এ ইনপুট দিলে অটোমেটিক যোগ হয়ে Total-এ বসবে
+function updateTotalFromSplit() {
+    let voilYds = parseFloat(document.getElementById("voilYds").value) || 0;
+    let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
+    document.getElementById("totalYds").value = voilYds + poplineYds;
+    calculateCost();
+}
+
+// সরাসরি Total Production ঘরে লিখলে Voil ও Popline এর ইনপুট ক্লিয়ার হয়ে যাবে
+function clearSplitOnDirectTotal() {
+    document.getElementById("voilYds").value = 0;
+    document.getElementById("poplineYds").value = 0;
+    calculateCost();
+}
+
 function calculateCost() {
     let voilYds = parseFloat(document.getElementById("voilYds").value) || 0;
     let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
-    
-    // সর্বমোট গজ
-    let totalYds = voilYds + poplineYds;
-    document.getElementById("totalYds").value = totalYds.toFixed(2);
+    let totalYds = parseFloat(document.getElementById("totalYds").value) || 0;
 
-    // মোট কেমিক্যাল খরচ বের করা
+    // মোট কেমিক্যাল খরচ
     let grandTotalCost = 0;
     chemicals.forEach(chem => {
         const qtyInput = document.getElementById(`input_${chem.id}`);
@@ -275,31 +286,31 @@ function calculateCost() {
         grandTotalCost += (qty * chem.rate);
     });
     
-    let voilTotalCost = 0;
-    let poplineTotalCost = 0;
-    let voilPerYds = 0;
-    let poplinePerYds = 0;
-    let avgPerYds = 0;
+    let voilTotalCost = 0, poplineTotalCost = 0;
+    let voilPerYds = 0, poplinePerYds = 0, avgPerYds = 0;
 
     if (totalYds > 0) {
-        // ফর্মুলা: Popline-এ খরচ 40% বেশি (Popline Weight Factor = 1.4)
-        // Equivalent Voil Yds = Voil Yds + (Popline Yds * 1.4)
-        let totalEquivalentVoilYds = voilYds + (poplineYds * 1.4);
-        
-        // বেস রেট (প্রতি গজ Voil এর খরচ)
-        voilPerYds = grandTotalCost / totalEquivalentVoilYds;
-        // Popline এর খরচ ৪০% বেশি
-        poplinePerYds = voilPerYds * 1.4;
-        
-        // আলাদা আলাদা টোটাল কস্টিং বন্টন
-        voilTotalCost = voilPerYds * voilYds;
-        poplineTotalCost = poplinePerYds * poplineYds;
-        
-        // পুরো লটের এভারেজ কস্ট
         avgPerYds = grandTotalCost / totalYds;
+
+        // যদি আলাদা করে Voil বা Popline দেওয়া থাকে, তবে রেশিও অনুযায়ী ভাগ হবে
+        if (voilYds > 0 || poplineYds > 0) {
+            document.getElementById("voilCard").style.display = "block";
+            document.getElementById("poplineCard").style.display = "block";
+
+            let totalEquivalentVoilYds = voilYds + (poplineYds * 1.4);
+            voilPerYds = grandTotalCost / totalEquivalentVoilYds;
+            poplinePerYds = voilPerYds * 1.4;
+            
+            voilTotalCost = voilPerYds * voilYds;
+            poplineTotalCost = poplinePerYds * poplineYds;
+        } else {
+            // যদি শুধু সরাসরি Total Production দেওয়া থাকে, তবে আলাদা কার্ডগুলো হাইড হয়ে যাবে
+            document.getElementById("voilCard").style.display = "none";
+            document.getElementById("poplineCard").style.display = "none";
+        }
     }
     
-    // স্ক্রিনে রেজাল্ট দেখানো
+    // UI আপডেট
     document.getElementById("voilTotal").innerHTML = voilTotalCost.toFixed(2);
     document.getElementById("voilPer").innerHTML = voilPerYds.toFixed(4);
     
