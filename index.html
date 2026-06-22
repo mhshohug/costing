@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Textile Cost Calculator</title>
+<title>Textile Cost Calculator - Tab/Section Switch</title>
 
 <style>
 :root {
@@ -93,6 +93,7 @@ input:focus, select:focus {
     grid-template-columns: 3fr 2fr auto;
     gap: 10px;
     padding: 0 10px;
+    margin-top: 15px;
     margin-bottom: 5px;
     font-weight: bold;
     font-size: 12px;
@@ -162,6 +163,14 @@ input:focus, select:focus {
     margin-bottom: 4px;
 }
 .res-item:last-child { margin-bottom: 0; font-weight: bold; }
+
+/* Section visibility control */
+.calc-section {
+    display: none;
+}
+.calc-section.active {
+    display: block;
+}
 </style>
 </head>
 <body>
@@ -170,13 +179,13 @@ input:focus, select:focus {
     <h2>Chemical Cost Calculator</h2>
 
     <div class="add-box">
-        <label style="margin-top:0; color: var(--primary-color); font-size: 12px;">+ নতুন আইটেম যোগ করুন</label>
+        <label style="margin-top:0; color: var(--primary-color); font-size: 12px;">+ নতুন আইটেম যোগ করুন / সেকশন পরিবর্তন করুন</label>
         <div class="grid-3">
             <input type="text" id="itemName" placeholder="Item Name">
             <input type="number" id="itemRate" placeholder="Rate / KG">
-            <select id="itemSection">
+            <select id="itemSection" onchange="switchSection(this.value)">
                 <option value="color">Color</option>
-                <option value="chemical">Chemical</option>
+                <option value="chemical" selected>Chemical</option>
                 <option value="coating">Coating</option>
             </select>
         </div>
@@ -189,15 +198,21 @@ input:focus, select:focus {
         <span></span>
     </div>
 
-    <h3>1. Color Section</h3>
-    <div id="colorContainer"></div>
+    <div id="sec_color" class="calc-section">
+        <h3>1. Color Section</h3>
+        <div id="colorContainer"></div>
+    </div>
 
-    <h3>2. Chemical Section</h3>
-    <div id="chemicalContainer"></div>
+    <div id="sec_chemical" class="calc-section active">
+        <h3>2. Chemical Section</h3>
+        <div id="chemicalContainer"></div>
+    </div>
 
-    <h3>3. Coating Section</h3>
-    <div id="coatingContainer">
-        <div class="empty-msg">কোনো কোটিং আইটেম যোগ করা হয়নি।</div>
+    <div id="sec_coating" class="calc-section">
+        <h3>3. Coating Section</h3>
+        <div id="coatingContainer">
+            <div class="empty-msg">কোনো কোটিং আইটেম যোগ করা হয়নি।</div>
+        </div>
     </div>
 
     <h3>Production (Yds)</h3>
@@ -236,7 +251,7 @@ input:focus, select:focus {
 </div>
 
 <script>
-// স্ক্রিনশট ১ এবং ২ এর ডেটা আগে থেকেই ডিফাইন করা হলো
+// প্রি-লোডেড ডাটাবেজ
 let itemsList = [
     // Color Section Data
     { id: "c1", name: "Yellow MERL", rate: 450, section: "color" },
@@ -255,6 +270,16 @@ let itemsList = [
     { id: "ch5", name: "PVA", rate: 350, section: "chemical" },
     { id: "ch6", name: "A. Acid", rate: 40, section: "chemical" }
 ];
+
+// সেকশন পরিবর্তন করার ফাংশন
+function switchSection(sectionName) {
+    // সব সেকশন হাইড করা
+    document.querySelectorAll('.calc-section').forEach(sec => {
+        sec.classList.remove('active');
+    });
+    // সিলেক্টেড সেকশনটি শো করা
+    document.getElementById(`sec_${sectionName}`).classList.add('active');
+}
 
 function renderSections() {
     const sections = {
@@ -288,7 +313,7 @@ function renderSections() {
 
     Object.keys(sections).forEach(key => {
         if (sections[key].children.length === 0) {
-            sections[key].innerHTML = `<div class="empty-msg">কোনো আইটেম যোগ করা হয়নি।</div>`;
+            sections[key].innerHTML = `<div class="empty-msg">কোনো কোটিং আইটেম যোগ করা হয়নি।</div>`;
         }
     });
 }
@@ -314,6 +339,7 @@ function addNewItem() {
     rateEl.value = "";
     
     renderSections();
+    switchSection(section); // নতুন আইটেম যে সেকশনে অ্যাড হয়েছে সেখানে অটো সুইচ করবে
     calculateCost();
 }
 
@@ -341,6 +367,7 @@ function calculateCost() {
     let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
     let totalYds = parseFloat(document.getElementById("totalYds").value) || 0;
 
+    // স্ক্রিনের সব আইটেমের (Color, Chemical, Coating) মোট যোগফল বের করা
     let grandTotalCost = 0;
     itemsList.forEach(item => {
         const inputField = document.getElementById(`qty_${item.id}`);
@@ -381,7 +408,7 @@ function calculateCost() {
     document.getElementById("avgPer").innerHTML = avgPerYds.toFixed(4);
 }
 
-// Initial Call
+// Initial Run
 renderSections();
 </script>
 
