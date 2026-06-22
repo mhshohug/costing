@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Textile Cost Calculator (Flexible Production)</title>
+<title>Textile Cost Calculator</title>
 
 <style>
 :root {
     --primary-color: #2563eb;
     --primary-hover: #1d4ed8;
-    --bg-color: #f1f5f9;
+    --bg-color: #f8fafc;
     --card-bg: #ffffff;
     --text-color: #1e293b;
     --border-color: #cbd5e1;
@@ -22,16 +22,16 @@ body {
     background: var(--bg-color);
     color: var(--text-color);
     margin: 0;
-    padding: 20px;
+    padding: 15px;
 }
 
 .container {
-    max-width: 550px;
-    margin: 20px auto;
+    max-width: 500px;
+    margin: 10px auto;
     background: var(--card-bg);
-    padding: 25px;
+    padding: 20px;
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 h2 {
@@ -39,101 +39,127 @@ h2 {
     color: var(--primary-color);
     margin-top: 0;
     margin-bottom: 20px;
+    font-size: 22px;
 }
 
 h3 {
     border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 6px;
-    margin-top: 20px;
-    color: #475569;
+    padding-bottom: 4px;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    color: #334155;
+    font-size: 16px;
 }
 
 .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 12px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1.5fr 1.2fr 1.3fr;
+    gap: 8px;
 }
 
 .form-group {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 label {
     font-weight: 600;
     display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
+    margin-bottom: 4px;
+    font-size: 13px;
 }
 
-input {
+input, select {
     width: 100%;
-    padding: 10px;
+    padding: 9px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     box-sizing: border-box;
     font-size: 14px;
 }
 
-input:focus {
+input:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 213, 0.15);
 }
 
-/* Dynamic Chemical Rows */
-.chemical-row {
+.item-grid-header {
     display: grid;
-    grid-template-columns: 3fr 2.5fr auto;
+    grid-template-columns: 3fr 2fr auto;
     gap: 10px;
-    background: #f8fafc;
-    padding: 10px;
+    padding: 0 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* Row Layout for dynamic inputs */
+.item-row {
+    display: grid;
+    grid-template-columns: 3fr 2fr auto;
+    gap: 10px;
+    background: #ffffff;
+    padding: 8px 10px;
     border-radius: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     align-items: center;
     border: 1px solid #e2e8f0;
 }
 
-.add-chem-box {
+.add-box {
     background: #f8fafc;
     border: 1px dashed var(--primary-color);
-    padding: 15px;
+    padding: 12px;
     border-radius: 10px;
     margin-bottom: 15px;
 }
 
 .btn {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
 }
 
 .btn-primary { background: var(--primary-color); }
 .btn-primary:hover { background: var(--primary-hover); }
-.btn-secondary { background: #475569; margin-top: 8px; padding: 10px;}
+.btn-secondary { background: #475569; margin-top: 8px; padding: 8px;}
 .btn-secondary:hover { background: #334155; }
-.btn-danger { background: #ef4444; padding: 10px; border-radius: 8px;}
+.btn-danger { background: #ef4444; padding: 8px 12px; border-radius: 6px;}
 .btn-danger:hover { background: #dc2626; }
 
-/* Dashboard Results */
+.empty-msg {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 13px;
+    padding: 5px 10px;
+}
+
+/* Results Display */
 .result-box {
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 16px;
+    margin-top: 12px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    font-size: 15px;
 }
 .voil-res { background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; }
 .popline-res { background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; }
-.total-res { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 18px; }
+.total-res { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
 
 .res-item {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 .res-item:last-child { margin-bottom: 0; font-weight: bold; }
 </style>
@@ -143,24 +169,36 @@ input:focus {
 <div class="container">
     <h2>Chemical Cost Calculator</h2>
 
-    <div class="add-chem-box">
-        <label style="margin-top:0; color: var(--primary-color);">＋ নতুন কেমিক্যাল যোগ করুন</label>
-        <div class="grid-2">
-            <input type="text" id="newChemName" placeholder="Chemical Name">
-            <input type="number" id="newChemRate" placeholder="Rate per KG (Tk)">
+    <div class="add-box">
+        <label style="margin-top:0; color: var(--primary-color); font-size: 12px;">+ নতুন আইটেম যোগ করুন</label>
+        <div class="grid-3">
+            <input type="text" id="itemName" placeholder="Item Name">
+            <input type="number" id="itemRate" placeholder="Rate / KG">
+            <select id="itemSection">
+                <option value="color">Color</option>
+                <option value="chemical">Chemical</option>
+                <option value="coating">Coating</option>
+            </select>
         </div>
-        <button class="btn btn-secondary" onclick="addNewChemical()">Add to List</button>
+        <button class="btn btn-secondary" onclick="addNewItem()">Add to List</button>
     </div>
 
-    <h3>Chemicals Input</h3>
-    <div style="display:grid; grid-template-columns: 3fr 2.5fr auto; gap:10px; padding-left:10px; margin-bottom:5px;">
-        <span style="font-weight:bold; font-size:12px; color:#64748b;">Name (Rate)</span>
-        <span style="font-weight:bold; font-size:12px; color:#64748b;">Total QTY (KG)</span>
+    <div class="item-grid-header">
+        <span>Name (Rate)</span>
+        <span>Total QTY (KG)</span>
         <span></span>
     </div>
-    
-    <div id="chemicalList">
-        </div>
+
+    <h3>1. Color Section</h3>
+    <div id="colorContainer"></div>
+
+    <h3>2. Chemical Section</h3>
+    <div id="chemicalContainer"></div>
+
+    <h3>3. Coating Section</h3>
+    <div id="coatingContainer">
+        <div class="empty-msg">কোনো কোটিং আইটেম যোগ করা হয়নি।</div>
+    </div>
 
     <h3>Production (Yds)</h3>
     <div class="grid-2">
@@ -175,11 +213,11 @@ input:focus {
     </div>
     
     <div class="form-group">
-        <label style="color: #1e293b;">Total Production (Yds)</label>
-        <input type="number" id="totalYds" value="0" style="font-weight: bold; background: #fff;" oninput="clearSplitOnDirectTotal()">
+        <label>Total Production (Yds)</label>
+        <input type="number" id="totalYds" value="0" oninput="clearSplitOnDirectTotal()">
     </div>
 
-    <button class="btn btn-primary" onclick="calculateCost()">Calculate Costs</button>
+    <button class="btn btn-primary" style="margin-top: 5px;" onclick="calculateCost()">Calculate Costs</button>
 
     <div id="voilCard" class="result-box voil-res">
         <div class="res-item"><span>Voil Chemical Cost:</span> <span><span id="voilTotal">0.00</span> Tk</span></div>
@@ -198,75 +236,100 @@ input:focus {
 </div>
 
 <script>
-let chemicals = [
-    { id: "power", name: "Power Soft", rate: 200 },
-    { id: "softener", name: "Softener", rate: 300 },
-    { id: "appriton", name: "Appriton", rate: 180 },
-    { id: "buster", name: "Buster", rate: 400 },
-    { id: "pva", name: "PVA", rate: 350 },
-    { id: "acid", name: "A. Acid", rate: 40 }
+// স্ক্রিনশট ১ এবং ২ এর ডেটা আগে থেকেই ডিফাইন করা হলো
+let itemsList = [
+    // Color Section Data
+    { id: "c1", name: "Yellow MERL", rate: 450, section: "color" },
+    { id: "c2", name: "Red 3BS", rate: 440, section: "color" },
+    { id: "c3", name: "Navy CF/BG", rate: 450, section: "color" },
+    { id: "c4", name: "Black B", rate: 430, section: "color" },
+    { id: "c5", name: "T Blue G", rate: 600, section: "color" },
+    { id: "c6", name: "Blue RSPL", rate: 2700, section: "color" },
+    { id: "c7", name: "Yellow 4GL", rate: 480, section: "color" },
+
+    // Chemical Section Data
+    { id: "ch1", name: "Power Soft", rate: 200, section: "chemical" },
+    { id: "ch2", name: "Softener", rate: 300, section: "chemical" },
+    { id: "ch3", name: "Appriton", rate: 180, section: "chemical" },
+    { id: "ch4", name: "Buster", rate: 400, section: "chemical" },
+    { id: "ch5", name: "PVA", rate: 350, section: "chemical" },
+    { id: "ch6", name: "A. Acid", rate: 40, section: "chemical" }
 ];
 
-function renderChemicals() {
-    const listContainer = document.getElementById("chemicalList");
-    const savedValues = {};
-    
-    chemicals.forEach(chem => {
-        const inputEl = document.getElementById(`input_${chem.id}`);
-        savedValues[chem.id] = inputEl ? inputEl.value : "0";
+function renderSections() {
+    const sections = {
+        color: document.getElementById("colorContainer"),
+        chemical: document.getElementById("chemicalContainer"),
+        coating: document.getElementById("coatingContainer")
+    };
+
+    const activeValues = {};
+    itemsList.forEach(item => {
+        const inputField = document.getElementById(`qty_${item.id}`);
+        activeValues[item.id] = inputField ? inputField.value : "";
     });
 
-    listContainer.innerHTML = "";
-    
-    chemicals.forEach(chem => {
+    Object.keys(sections).forEach(key => {
+        sections[key].innerHTML = "";
+    });
+
+    itemsList.forEach(item => {
         const row = document.createElement("div");
-        row.className = "chemical-row";
-        const currentQty = savedValues[chem.id] || "0";
+        row.className = "item-row";
+        const currentQty = activeValues[item.id] || "";
 
         row.innerHTML = `
-            <span style="font-size:15px; font-weight:600;">${chem.name} <br><small style="color:#64748b; font-weight:normal;">(${chem.rate} Tk/KG)</small></span>
-            <input type="number" id="input_${chem.id}" value="${currentQty}" min="0" oninput="calculateCost()">
-            <button class="btn btn-danger" onclick="removeChemical('${chem.id}')">✕</button>
+            <span style="font-size:14px; font-weight:600;">${item.name} <br><small style="color:#64748b; font-weight:normal;">(${item.rate} Tk/KG)</small></span>
+            <input type="number" id="qty_${item.id}" value="${currentQty}" placeholder="0" min="0" oninput="calculateCost()">
+            <button class="btn btn-danger" onclick="removeItem('${item.id}')">✕</button>
         `;
-        listContainer.appendChild(row);
+        sections[item.section].appendChild(row);
+    });
+
+    Object.keys(sections).forEach(key => {
+        if (sections[key].children.length === 0) {
+            sections[key].innerHTML = `<div class="empty-msg">কোনো আইটেম যোগ করা হয়নি।</div>`;
+        }
     });
 }
 
-function addNewChemical() {
-    const nameInput = document.getElementById("newChemName");
-    const rateInput = document.getElementById("newChemRate");
-    const name = nameInput.value.trim();
-    const rate = parseFloat(rateInput.value);
-    
+function addNewItem() {
+    const nameEl = document.getElementById("itemName");
+    const rateEl = document.getElementById("itemRate");
+    const sectionEl = document.getElementById("itemSection");
+
+    const name = nameEl.value.trim();
+    const rate = parseFloat(rateEl.value);
+    const section = sectionEl.value;
+
     if (name === "" || isNaN(rate) || rate <= 0) {
-        alert("সঠিক নাম এবং রেট দিন।");
+        alert("সঠিক নাম এবং রেট প্রদান করুন।");
         return;
     }
+
+    const id = "id_" + Date.now();
+    itemsList.push({ id: id, name: name, rate: rate, section: section });
+
+    nameEl.value = "";
+    rateEl.value = "";
     
-    const id = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Date.now();
-    chemicals.push({ id: id, name: name, rate: rate });
-    
-    nameInput.value = "";
-    rateInput.value = "";
-    renderChemicals();
+    renderSections();
     calculateCost();
 }
 
-function removeChemical(id) {
-    chemicals = chemicals.filter(chem => chem.id !== id);
-    renderChemicals();
+function removeItem(id) {
+    itemsList = itemsList.filter(item => item.id !== id);
+    renderSections();
     calculateCost();
 }
 
-// Voil বা Popline-এ ইনপুট দিলে অটোমেটিক যোগ হয়ে Total-এ বসবে
 function updateTotalFromSplit() {
-    let voilYds = parseFloat(document.getElementById("voilYds").value) || 0;
-    let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
-    document.getElementById("totalYds").value = voilYds + poplineYds;
+    let voil = parseFloat(document.getElementById("voilYds").value) || 0;
+    let popline = parseFloat(document.getElementById("poplineYds").value) || 0;
+    document.getElementById("totalYds").value = voil + popline;
     calculateCost();
 }
 
-// সরাসরি Total Production ঘরে লিখলে Voil ও Popline এর ইনপুট ক্লিয়ার হয়ে যাবে
 function clearSplitOnDirectTotal() {
     document.getElementById("voilYds").value = 0;
     document.getElementById("poplineYds").value = 0;
@@ -278,51 +341,48 @@ function calculateCost() {
     let poplineYds = parseFloat(document.getElementById("poplineYds").value) || 0;
     let totalYds = parseFloat(document.getElementById("totalYds").value) || 0;
 
-    // মোট কেমিক্যাল খরচ
     let grandTotalCost = 0;
-    chemicals.forEach(chem => {
-        const qtyInput = document.getElementById(`input_${chem.id}`);
-        let qty = qtyInput ? parseFloat(qtyInput.value) || 0 : 0;
-        grandTotalCost += (qty * chem.rate);
+    itemsList.forEach(item => {
+        const inputField = document.getElementById(`qty_${item.id}`);
+        let qty = inputField ? parseFloat(inputField.value) || 0 : 0;
+        grandTotalCost += (qty * item.rate);
     });
-    
+
     let voilTotalCost = 0, poplineTotalCost = 0;
     let voilPerYds = 0, poplinePerYds = 0, avgPerYds = 0;
 
     if (totalYds > 0) {
         avgPerYds = grandTotalCost / totalYds;
 
-        // যদি আলাদা করে Voil বা Popline দেওয়া থাকে, তবে রেশিও অনুযায়ী ভাগ হবে
         if (voilYds > 0 || poplineYds > 0) {
             document.getElementById("voilCard").style.display = "block";
             document.getElementById("poplineCard").style.display = "block";
 
+            // ৪০% এক্সট্রা কস্টিং ফর্মুলা
             let totalEquivalentVoilYds = voilYds + (poplineYds * 1.4);
             voilPerYds = grandTotalCost / totalEquivalentVoilYds;
             poplinePerYds = voilPerYds * 1.4;
-            
+
             voilTotalCost = voilPerYds * voilYds;
             poplineTotalCost = poplinePerYds * poplineYds;
         } else {
-            // যদি শুধু সরাসরি Total Production দেওয়া থাকে, তবে আলাদা কার্ডগুলো হাইড হয়ে যাবে
             document.getElementById("voilCard").style.display = "none";
             document.getElementById("poplineCard").style.display = "none";
         }
     }
-    
-    // UI আপডেট
+
     document.getElementById("voilTotal").innerHTML = voilTotalCost.toFixed(2);
     document.getElementById("voilPer").innerHTML = voilPerYds.toFixed(4);
-    
+
     document.getElementById("poplineTotal").innerHTML = poplineTotalCost.toFixed(2);
     document.getElementById("poplinePer").innerHTML = poplinePerYds.toFixed(4);
-    
+
     document.getElementById("grandTotal").innerHTML = grandTotalCost.toFixed(2);
     document.getElementById("avgPer").innerHTML = avgPerYds.toFixed(4);
 }
 
-// Initial Load
-renderChemicals();
+// Initial Call
+renderSections();
 </script>
 
 </body>
